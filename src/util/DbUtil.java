@@ -23,10 +23,10 @@ public class DbUtil {
                 String url = prop.getProperty("url");
                 String user = prop.getProperty("user");
                 String password = prop.getProperty("password");
-                Class.forName(driver);
+               // Class.forName(driver);
+                DriverManager.registerDriver(new org.postgresql.Driver());
                 connection = DriverManager.getConnection(url, user, password);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+
             } catch (SQLException e) {
                 e.printStackTrace();
             } catch (FileNotFoundException e) {

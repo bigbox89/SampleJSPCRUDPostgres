@@ -28,12 +28,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <webXml>webapp\WEB-INF\web.xml</webXml>
-                    <webappDirectory>webapp</webappDirectory>
-                    <source>${project.basedir}\src</source>
-                    <warSourceDirectory>${project.basedir}\src</warSourceDirectory>
-                    <target>${maven.compiler.target}</target>
-                    <encoding>utf-8</encoding>
+                    <webXml>${project.basedir}\webapp\WEB-INF\web.xml</webXml>
+                    <webappDirectory>${project.basedir}\webapp</webappDirectory>
+                    <warSourceDirectory>${project.basedir}\webapp</warSourceDirectory>
                 </configuration>
             </plugin>
         </plugins>
@@ -46,7 +43,17 @@
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-war-plugin -->
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
 
     </dependencies>
 </project>
