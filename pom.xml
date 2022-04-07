@@ -17,6 +17,22 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}/webapp/WEB-INF/classes</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${project.basedir}/webapp/WEB-INF/lib</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
                 <executions>
@@ -31,6 +47,7 @@
                     <webXml>${project.basedir}\webapp\WEB-INF\web.xml</webXml>
                     <webappDirectory>${project.basedir}\webapp</webappDirectory>
                     <warSourceDirectory>${project.basedir}\webapp</warSourceDirectory>
+                    <workDirectory>/tmp/${project.artifactId}/war/work</workDirectory>
                 </configuration>
             </plugin>
         </plugins>
