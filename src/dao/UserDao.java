@@ -18,94 +18,114 @@ public class UserDao {
 	public UserDao() {
 		connection = DbUtil.getConnection();
 	}
+	private static final String INSERT_USERS_SQL = "INSERT INTO users" + "  (name, email, country) VALUES " +
+			" (?, ?, ?);";
 
-	public void addUser(User user) {
-		try {
-			PreparedStatement preparedStatement = connection
-					.prepareStatement("insert into users(firstname,lastname,dob,email) values (?, ?, ?, ? )");
-			// Parameters start with 1
-			preparedStatement.setString(1, user.getFirstName());
-			preparedStatement.setString(2, user.getLastName());
-			preparedStatement.setDate(3, new java.sql.Date(user.getDob().getTime()));
-			preparedStatement.setString(4, user.getEmail());
+	private static final String SELECT_USER_BY_ID = "select id,name,email,country from users where id =?";
+	private static final String SELECT_ALL_USERS = "select * from users";
+	private static final String DELETE_USERS_SQL = "delete from users where id = ?;";
+	private static final String UPDATE_USERS_SQL = "update users set name = ?,email= ?, country =? where id = ?;";
+
+
+	public void insertUser(User user) throws SQLException {
+		System.out.println(INSERT_USERS_SQL);
+		// try-with-resource statement will auto close the connection.
+		try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
+			preparedStatement.setString(1, user.getName());
+			preparedStatement.setString(2, user.getEmail());
+			preparedStatement.setString(3, user.getCountry());
+			System.out.println(preparedStatement);
 			preparedStatement.executeUpdate();
-
 		} catch (SQLException e) {
-			e.printStackTrace();
+			printSQLException(e);
 		}
 	}
-	
-	public void deleteUser(int userId) {
-		try {
-			PreparedStatement preparedStatement = connection
-					.prepareStatement("delete from users where userid=?");
-			// Parameters start with 1
-			preparedStatement.setInt(1, userId);
-			preparedStatement.executeUpdate();
+	public User selectUser(int id) {
+		User user = null;
+		// Step 1: Establishing a Connection
+		try (
+			 // Step 2:Create a statement using connection object
+			 PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_ID);) {
+			preparedStatement.setInt(1, id);
+			System.out.println(preparedStatement);
+			// Step 3: Execute the query or update query
+			ResultSet rs = preparedStatement.executeQuery();
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void updateUser(User user) {
-		try {
-			PreparedStatement preparedStatement = connection
-					.prepareStatement("update users set firstname=?, lastname=?, dob=?, email=?" +
-							"where userid=?");
-			// Parameters start with 1
-			preparedStatement.setString(1, user.getFirstName());
-			preparedStatement.setString(2, user.getLastName());
-			preparedStatement.setDate(3, new java.sql.Date(user.getDob().getTime()));
-			preparedStatement.setString(4, user.getEmail());
-			preparedStatement.setInt(5, user.getUserid());
-			preparedStatement.executeUpdate();
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public List<User> getAllUsers() {
-		List<User> users = new ArrayList<User>();
-		try {
-			Statement statement = connection.createStatement();
-			ResultSet rs = statement.executeQuery("select * from users");
+			// Step 4: Process the ResultSet object.
 			while (rs.next()) {
-				User user = new User();
-				user.setUserid(rs.getInt("userid"));
-				user.setFirstName(rs.getString("firstname"));
-				user.setLastName(rs.getString("lastname"));
-				user.setDob(rs.getDate("dob"));
-				user.setEmail(rs.getString("email"));
-				users.add(user);
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				String country = rs.getString("country");
+				user = new User(id, name, email, country);
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			printSQLException(e);
 		}
+		return user;
+	}
 
+	public List <User> selectAllUsers() {
+
+		// using try-with-resources to avoid closing resources (boiler plate code)
+		List <User> users = new ArrayList < > ();
+		// Step 1: Establishing a Connection
+		try (
+
+			 // Step 2:Create a statement using connection object
+			 PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_USERS);) {
+			System.out.println(preparedStatement);
+			// Step 3: Execute the query or update query
+			ResultSet rs = preparedStatement.executeQuery();
+
+			// Step 4: Process the ResultSet object.
+			while (rs.next()) {
+				int id = rs.getInt("id");
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				String country = rs.getString("country");
+				users.add(new User(id, name, email, country));
+			}
+		} catch (SQLException e) {
+			printSQLException(e);
+		}
 		return users;
 	}
-	
-	public User getUserById(int userId) {
-		User user = new User();
-		try {
-			PreparedStatement preparedStatement = connection.
-					prepareStatement("select * from users where userid=?");
-			preparedStatement.setInt(1, userId);
-			ResultSet rs = preparedStatement.executeQuery();
-			
-			if (rs.next()) {
-				user.setUserid(rs.getInt("userid"));
-				user.setFirstName(rs.getString("firstname"));
-				user.setLastName(rs.getString("lastname"));
-				user.setDob(rs.getDate("dob"));
-				user.setEmail(rs.getString("email"));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 
-		return user;
+	public boolean deleteUser(int id) throws SQLException {
+		boolean rowDeleted;
+		try ( PreparedStatement statement = connection.prepareStatement(DELETE_USERS_SQL);) {
+			statement.setInt(1, id);
+			rowDeleted = statement.executeUpdate() > 0;
+		}
+		return rowDeleted;
+	}
+
+	public boolean updateUser(User user) throws SQLException {
+		boolean rowUpdated;
+		try ( PreparedStatement statement = connection.prepareStatement(UPDATE_USERS_SQL);) {
+			statement.setString(1, user.getName());
+			statement.setString(2, user.getEmail());
+			statement.setString(3, user.getCountry());
+			statement.setInt(4, user.getId());
+
+			rowUpdated = statement.executeUpdate() > 0;
+		}
+		return rowUpdated;
+	}
+
+	private void printSQLException(SQLException ex) {
+		for (Throwable e: ex) {
+			if (e instanceof SQLException) {
+				e.printStackTrace(System.err);
+				System.err.println("SQLState: " + ((SQLException) e).getSQLState());
+				System.err.println("Error Code: " + ((SQLException) e).getErrorCode());
+				System.err.println("Message: " + e.getMessage());
+				Throwable t = ex.getCause();
+				while (t != null) {
+					System.out.println("Cause: " + t);
+					t = t.getCause();
+				}
+			}
+		}
 	}
 }
