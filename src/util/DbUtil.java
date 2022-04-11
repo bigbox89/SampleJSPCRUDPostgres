@@ -12,9 +12,10 @@ public class DbUtil {
 	private static Connection connection = null;
 
     public static Connection getConnection() {
-        if (connection != null)
-            return connection;
-        else {
+       // if (connection != null)
+        //    return connection;
+        //else {
+        connection = null;
             try {
             	Properties prop = new Properties();
                 InputStream inputStream = DbUtil.class.getClassLoader().getResourceAsStream("/db.properties");
@@ -34,8 +35,9 @@ public class DbUtil {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            System.out.println(connection.toString());
             return connection;
         }
 
-    }
+   // }
 }

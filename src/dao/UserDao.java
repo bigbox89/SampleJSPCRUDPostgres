@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class UserDao {
 	private Connection connection;
 
 	public UserDao() {
-		connection = DbUtil.getConnection();
+		//connection = DbUtil.getConnection();
 	}
 	private static final String INSERT_USERS_SQL = "INSERT INTO users" + "  (name, email, country) VALUES " +
 			" (?, ?, ?);";
@@ -29,6 +28,7 @@ public class UserDao {
 
 	public void insertUser(User user) throws SQLException {
 		System.out.println(INSERT_USERS_SQL);
+		connection = DbUtil.getConnection();
 		// try-with-resource statement will auto close the connection.
 		try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
 			preparedStatement.setString(1, user.getName());
@@ -39,9 +39,11 @@ public class UserDao {
 		} catch (SQLException e) {
 			printSQLException(e);
 		}
+		connection.close();
 	}
-	public User selectUser(int id) {
+	public User selectUser(int id) throws SQLException {
 		User user = null;
+		connection = DbUtil.getConnection();
 		// Step 1: Establishing a Connection
 		try (
 			 // Step 2:Create a statement using connection object
@@ -61,11 +63,12 @@ public class UserDao {
 		} catch (SQLException e) {
 			printSQLException(e);
 		}
+		connection.close();
 		return user;
 	}
 
-	public List <User> selectAllUsers() {
-
+	public List <User> selectAllUsers() throws SQLException {
+		connection = DbUtil.getConnection();
 		// using try-with-resources to avoid closing resources (boiler plate code)
 		List <User> users = new ArrayList < > ();
 		// Step 1: Establishing a Connection
@@ -88,19 +91,23 @@ public class UserDao {
 		} catch (SQLException e) {
 			printSQLException(e);
 		}
+		connection.close();
 		return users;
 	}
 
 	public boolean deleteUser(int id) throws SQLException {
+		connection = DbUtil.getConnection();
 		boolean rowDeleted;
 		try ( PreparedStatement statement = connection.prepareStatement(DELETE_USERS_SQL);) {
 			statement.setInt(1, id);
 			rowDeleted = statement.executeUpdate() > 0;
 		}
+		connection.close();
 		return rowDeleted;
 	}
 
 	public boolean updateUser(User user) throws SQLException {
+		connection = DbUtil.getConnection();
 		boolean rowUpdated;
 		try ( PreparedStatement statement = connection.prepareStatement(UPDATE_USERS_SQL);) {
 			statement.setString(1, user.getName());
@@ -110,10 +117,12 @@ public class UserDao {
 
 			rowUpdated = statement.executeUpdate() > 0;
 		}
+		connection.close();
 		return rowUpdated;
 	}
 
 	private void printSQLException(SQLException ex) {
+
 		for (Throwable e: ex) {
 			if (e instanceof SQLException) {
 				e.printStackTrace(System.err);
