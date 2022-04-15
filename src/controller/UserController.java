@@ -1,6 +1,8 @@
 package controller;
 
 import dao.UserDao;
+import dao.UserDaoHibernate;
+import entity.UserEntity;
 import model.User;
 
 import java.io.IOException;
@@ -18,11 +20,13 @@ import javax.servlet.http.HttpServletResponse;
 
 public class UserController extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private UserDao userDAO;
+  //  private UserDao userDAO;
+    private UserDaoHibernate userDaoHibernate;
 
     public UserController() {
         super();
-        userDAO = new UserDao();
+        userDaoHibernate = new UserDaoHibernate();
+        //userDAO = new UserDao();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -62,7 +66,7 @@ public class UserController extends HttpServlet {
 
     private void listUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        List < User > listUser = userDAO.selectAllUsers();
+        List <UserEntity> listUser = userDaoHibernate.findAll();
         request.setAttribute("listUser", listUser);
         RequestDispatcher dispatcher = request.getRequestDispatcher("user-list.jsp");
         dispatcher.forward(request, response);
@@ -77,7 +81,7 @@ public class UserController extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        User existingUser = userDAO.selectUser(id);
+        UserEntity existingUser = userDaoHibernate.selectUser(id);
         RequestDispatcher dispatcher = request.getRequestDispatcher("user-form.jsp");
         request.setAttribute("user", existingUser);
         dispatcher.forward(request, response);
@@ -89,8 +93,8 @@ public class UserController extends HttpServlet {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         String country = request.getParameter("country");
-        User newUser = new User(name, email, country);
-        userDAO.insertUser(newUser);
+        UserEntity newUser = new UserEntity(name, email, country);
+        userDaoHibernate.save(newUser);
         response.sendRedirect("list");
     }
 
@@ -101,15 +105,15 @@ public class UserController extends HttpServlet {
         String email = request.getParameter("email");
         String country = request.getParameter("country");
 
-        User book = new User(id, name, email, country);
-        userDAO.updateUser(book);
+        UserEntity user = new UserEntity(id, name, email, country);
+        userDaoHibernate.update(user);
         response.sendRedirect("list");
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        userDAO.deleteUser(id);
+        userDaoHibernate.delete(id);
         response.sendRedirect("list");
 
     }
