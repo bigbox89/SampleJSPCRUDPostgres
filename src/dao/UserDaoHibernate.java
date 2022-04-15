@@ -29,7 +29,7 @@ public class UserDaoHibernate {
             transaction = session.beginTransaction();
 
             // Obtain an entity using byId() method
-            UserEntity user = session.byId(UserEntity.class).getReference(id);
+            UserEntity user = (UserEntity) session.get(UserEntity.class,id);
             // commit transaction
             return user;
 
